@@ -6,19 +6,22 @@ use serde::{
     Deserialize, Deserializer, Serialize, Serializer,
 };
 
-impl Serialize for Vec2 {
+macro_rules! impl_serde_vec {
+    ($(($v2t:ident, $v3t:ident, $v4t:ident) => ($vis2t:ident, $vis3t:ident, $vis4t:ident) => $t:ident),+) => {
+        $(
+impl Serialize for $v2t {
     fn serialize<T>(&self, serializer: T) -> Result<T::Ok, T::Error>
     where
         T: Serializer,
     {
-        let mut state = serializer.serialize_struct("Vec2", 2)?;
+        let mut state = serializer.serialize_struct(stringify!($v2t), 2)?;
         state.serialize_field("x", &self.x)?;
         state.serialize_field("y", &self.y)?;
         state.end()
     }
 }
 
-impl<'de> Deserialize<'de> for Vec2 {
+impl<'de> Deserialize<'de> for $v2t {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -58,16 +61,16 @@ impl<'de> Deserialize<'de> for Vec2 {
             }
         }
 
-        struct Vec2Visitor;
+        struct $vis2t;
 
-        impl<'de> Visitor<'de> for Vec2Visitor {
-            type Value = Vec2;
+        impl<'de> Visitor<'de> for $vis2t {
+            type Value = $v2t;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("struct Vec2")
+                formatter.write_str(concat!("struct ", stringify!($v2t)))
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Vec2, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<$v2t, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -77,10 +80,10 @@ impl<'de> Deserialize<'de> for Vec2 {
                 let y = seq
                     .next_element()?
                     .ok_or_else(|| serde::de::Error::invalid_length(1, &self))?;
-                Ok(Vec2::new(x, y))
+                Ok($v2t::new(x, y))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Vec2, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<$v2t, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -104,22 +107,22 @@ impl<'de> Deserialize<'de> for Vec2 {
                 }
                 let x = x.ok_or_else(|| serde::de::Error::missing_field("x"))?;
                 let y = y.ok_or_else(|| serde::de::Error::missing_field("y"))?;
-                Ok(Vec2::new(x, y))
+                Ok($v2t::new(x, y))
             }
         }
 
         const FIELDS: &'static [&'static str] = &["x", "y"];
 
-        deserializer.deserialize_struct("Vec2", FIELDS, Vec2Visitor)
+        deserializer.deserialize_struct(stringify!($v2t), FIELDS, $vis2t)
     }
 }
 
-impl Serialize for Vec3 {
+impl Serialize for $v3t {
     fn serialize<T>(&self, serializer: T) -> Result<T::Ok, T::Error>
     where
         T: Serializer,
     {
-        let mut state = serializer.serialize_struct("Vec3", 3)?;
+        let mut state = serializer.serialize_struct(stringify!($v3t), 3)?;
         state.serialize_field("x", &self.x)?;
         state.serialize_field("y", &self.y)?;
         state.serialize_field("z", &self.z)?;
@@ -127,7 +130,7 @@ impl Serialize for Vec3 {
     }
 }
 
-impl<'de> Deserialize<'de> for Vec3 {
+impl<'de> Deserialize<'de> for $v3t {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -169,16 +172,16 @@ impl<'de> Deserialize<'de> for Vec3 {
             }
         }
 
-        struct Vec3Visitor;
+        struct $vis3t;
 
-        impl<'de> Visitor<'de> for Vec3Visitor {
-            type Value = Vec3;
+        impl<'de> Visitor<'de> for $vis3t {
+            type Value = $v3t;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("struct Vec3")
+                formatter.write_str(concat!("struct ", stringify!($v3t)))
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Vec3, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<$v3t, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -191,10 +194,10 @@ impl<'de> Deserialize<'de> for Vec3 {
                 let z = seq
                     .next_element()?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
-                Ok(Vec3::new(x, y, z))
+                Ok($v3t::new(x, y, z))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Vec3, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<$v3t, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -226,22 +229,22 @@ impl<'de> Deserialize<'de> for Vec3 {
                 let x = x.ok_or_else(|| serde::de::Error::missing_field("x"))?;
                 let y = y.ok_or_else(|| serde::de::Error::missing_field("y"))?;
                 let z = z.ok_or_else(|| serde::de::Error::missing_field("z"))?;
-                Ok(Vec3::new(x, y, z))
+                Ok($v3t::new(x, y, z))
             }
         }
 
         const FIELDS: &'static [&'static str] = &["x", "y", "z"];
 
-        deserializer.deserialize_struct("Vec3", FIELDS, Vec3Visitor)
+        deserializer.deserialize_struct(stringify!($v3t), FIELDS, $vis3t)
     }
 }
 
-impl Serialize for Vec4 {
+impl Serialize for $v4t {
     fn serialize<T>(&self, serializer: T) -> Result<T::Ok, T::Error>
     where
         T: Serializer,
     {
-        let mut state = serializer.serialize_struct("Vec4", 4)?;
+        let mut state = serializer.serialize_struct(stringify!($v4t), 4)?;
         state.serialize_field("x", &self.x)?;
         state.serialize_field("y", &self.y)?;
         state.serialize_field("z", &self.z)?;
@@ -250,7 +253,7 @@ impl Serialize for Vec4 {
     }
 }
 
-impl<'de> Deserialize<'de> for Vec4 {
+impl<'de> Deserialize<'de> for $v4t {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -294,16 +297,16 @@ impl<'de> Deserialize<'de> for Vec4 {
             }
         }
 
-        struct Vec4Visitor;
+        struct $vis4t;
 
-        impl<'de> Visitor<'de> for Vec4Visitor {
-            type Value = Vec4;
+        impl<'de> Visitor<'de> for $vis4t {
+            type Value = $v4t;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("struct Vec4")
+                formatter.write_str(concat!("struct ", stringify!($v4t)))
             }
 
-            fn visit_seq<V>(self, mut seq: V) -> Result<Vec4, V::Error>
+            fn visit_seq<V>(self, mut seq: V) -> Result<$v4t, V::Error>
             where
                 V: SeqAccess<'de>,
             {
@@ -316,13 +319,13 @@ impl<'de> Deserialize<'de> for Vec4 {
                 let z = seq
                     .next_element()?
                     .ok_or_else(|| serde::de::Error::invalid_length(2, &self))?;
-                let w: f32 = seq
+                let w: $t = seq
                     .next_element()?
                     .ok_or_else(|| serde::de::Error::invalid_length(3, &self))?;
-                Ok(Vec4::new(x, y, z, w))
+                Ok($v4t::new(x, y, z, w))
             }
 
-            fn visit_map<V>(self, mut map: V) -> Result<Vec4, V::Error>
+            fn visit_map<V>(self, mut map: V) -> Result<$v4t, V::Error>
             where
                 V: MapAccess<'de>,
             {
@@ -361,20 +364,46 @@ impl<'de> Deserialize<'de> for Vec4 {
                 let x = x.ok_or_else(|| serde::de::Error::missing_field("x"))?;
                 let y = y.ok_or_else(|| serde::de::Error::missing_field("y"))?;
                 let z = z.ok_or_else(|| serde::de::Error::missing_field("z"))?;
-                let w: f32 = w.ok_or_else(|| serde::de::Error::missing_field("w"))?;
-                Ok(Vec4::new(x, y, z, w))
+                let w: $t = w.ok_or_else(|| serde::de::Error::missing_field("w"))?;
+                Ok($v4t::new(x, y, z, w))
             }
         }
 
         const FIELDS: &'static [&'static str] = &["x", "y", "z", "w"];
 
-        deserializer.deserialize_struct("Vec4", FIELDS, Vec4Visitor)
+        deserializer.deserialize_struct(stringify!($v4t), FIELDS, $vis4t)
     }
 }
+        )+
+    };
+}
+
+impl_serde_vec!((Vec2, Vec3, Vec4) => (Vec2Visitor, Vec3Visitor, Vec4Visitor) => f32);
+
+#[cfg(feature = "int")]
+mod int {
+    use crate::*;
+
+    use serde::{
+        de::{MapAccess, SeqAccess, Visitor},
+        ser::SerializeStruct,
+        Deserialize, Deserializer, Serialize, Serializer,
+    };
+    
+    impl_serde_vec!(
+        (IVec2, IVec3, IVec4) => (IVec2Visitor, IVec3Visitor, IVec4Visitor) => i32,
+        (UVec2, UVec3, UVec4) => (UVec2Visitor, UVec3Visitor, UVec4Visitor) => u32
+    );
+}
+
+#[cfg(feature = "int")]
+pub use int::*;
 
 #[cfg(test)]
 mod vec_serde_tests {
     use crate::vec::{Vec2, Vec3, Vec4};
+    #[cfg(feature = "int")]
+    use crate::int::{IVec4, UVec4};
     use serde_test::{assert_tokens, Token};
 
     #[test]
@@ -442,7 +471,56 @@ mod vec_serde_tests {
             ],
         );
     }
-}
+
+    #[cfg(feature = "int")]
+    #[test]
+    fn uvec4() {
+        let vec4 = UVec4::new(1, 2, 3, 4);
+
+        assert_tokens(
+            &vec4,
+            &[
+                Token::Struct {
+                    name: "UVec4",
+                    len: 4,
+                },
+                Token::Str("x"),
+                Token::U32(1),
+                Token::Str("y"),
+                Token::U32(2),
+                Token::Str("z"),
+                Token::U32(3),
+                Token::Str("w"),
+                Token::U32(4),
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[cfg(feature = "int")]
+    #[test]
+    fn ivec4() {
+        let vec4 = IVec4::new(1, 2, 3, 4);
+
+        assert_tokens(
+            &vec4,
+            &[
+                Token::Struct {
+                    name: "IVec4",
+                    len: 4,
+                },
+                Token::Str("x"),
+                Token::I32(1),
+                Token::Str("y"),
+                Token::I32(2),
+                Token::Str("z"),
+                Token::I32(3),
+                Token::Str("w"),
+                Token::I32(4),
+                Token::StructEnd,
+            ],
+        );
+    }}
 
 impl Serialize for Mat2 {
     fn serialize<T>(&self, serializer: T) -> Result<T::Ok, T::Error>
